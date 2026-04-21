@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SpeedNest - تحدي الكتابة</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;400;700;900&family=JetBrains+Mono:wght@300;400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script type="importmap">
+{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }
+</script>
+<style>
+:root{
+  --bg:#0a1628;--bg2:#0f2035;--glass:rgba(15,40,80,0.35);--gb:rgba(60,130,200,0.15);
+  --tx:#e0eaff;--txm:#5a7a9a;--ac:#00d4ff;--ag:rgba(0,212,255,0.25);
+  --ok:#00e676;--no:#ff5252;--cur:#00d4ff;
+}
+*{margin:0;padding:0;box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--tx);overflow-x:hidden;min-height:100vh}
+#bgc{position:fixed;inset:0;z-index:0}
+#app{position:relative;z-index:1;min-height:100vh}
+.glass{background:var(--glass);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid var(--gb);border-radius:16px}
+.glass-s{background:var(--glass);backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);border:1px solid var(--gb);border-radius:20px}
+.scr{display:none;flex-direction:column;align-items:center;width:100%;min-height:100vh;padding:20px;position:relative}
+.scr.act{display:flex; animation: fadeIn 0.4s ease-out;}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.char{font-family:'JetBrains Mono',monospace;font-size:1.15rem;letter-spacing:.5px;transition:color .1s; display: inline; white-space: pre-wrap;}
+.char.ok{color:var(--ok)}.char.no{color:var(--no);text-decoration:underline;text-decoration-color:var(--no)}
+.char.cur{border-inline-start:2.5px solid var(--cur);animation:blink 1s step-end infinite}
+.char.pen{color:var(--txm)}
+@keyframes blink{0%,50%{border-color:var(--cur)}51%,100%{border-color:transparent}}
+.lvl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,1fr));gap:10px;width:100%}
+.lvl-card{width:100%;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:12px;cursor:pointer;transition:all .25s;font-weight:700;font-size:.95rem;position:relative;overflow:hidden}
+.lvl-card.locked{opacity:.35;cursor:not-allowed;filter:grayscale(.8)}
+.lvl-card.unlocked{background:var(--glass);border:1px solid var(--gb)}
+.lvl-card.unlocked:hover{transform:translateY(-3px);box-shadow:0 8px 25px var(--ag);border-color:var(--ac)}
+.lvl-card.done{border:1.5px solid var(--ac);background:rgba(0,212,255,.08)}
+.lvl-card.stars3{border-color:#ffd700;background:rgba(255,215,0,.08)}
+.lvl-card .stars{font-size:.55rem;color:#ffd700;margin-top:2px;letter-spacing:1px}
+.phase-tab{padding:8px 20px;border-radius:10px;font-size:.85rem;transition:all .3s;cursor:default}
+.phase-tab.on{background:var(--ac);color:#000;font-weight:700;box-shadow:0 0 20px var(--ag)}
+.phase-tab.off{color:var(--txm);background:transparent}
+.typing-zone{width:100%;padding:24px;transition:all .4s;position:relative}
+.typing-zone.active-zone{box-shadow:0 0 30px var(--ag),inset 0 0 30px rgba(0,212,255,.05);border-color:var(--ac)}
+.typing-zone.dim{opacity:.5}
+.stat-card{padding:16px 20px;text-align:center;min-width:100px}
+.stat-val{font-size:1.6rem;font-weight:900;color:var(--ac)}.stat-lbl{font-size:.75rem;color:var(--txm);margin-top:2px}
+.theme-dot{width:28px;height:28px;border-radius:50%;cursor:pointer;transition:all .25s;border:2px solid transparent;flex-shrink:0}
+.theme-dot:hover{transform:scale(1.2)}.theme-dot.on{border-color:#fff;box-shadow:0 0 12px var(--ag)}
+.cat-tab{padding:8px 16px;border-radius:10px;cursor:pointer;transition:all .25s;font-size:.85rem;color:var(--txm)}
+.cat-tab.on{background:var(--glass);color:var(--ac);border:1px solid var(--gb);font-weight:700}
+.cat-tab:hover:not(.on){color:var(--tx)}
+.result-star{font-size:2.5rem;color:#555;transition:all .4s}.result-star.lit{color:#ffd700;text-shadow:0 0 20px rgba(255,215,0,.5);transform:scale(1.15)}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:100;overflow:hidden}
+.cpiece{position:absolute;top:-12px;width:8px;height:12px;border-radius:2px;animation:cfall linear forwards}
+@keyframes cfall{0%{transform:translateY(0) rotate(0);opacity:1}100%{transform:translateY(105vh) rotate(900deg);opacity:0}}
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:200;padding:12px 28px;border-radius:12px;font-size:.9rem;font-weight:700;animation:toastin .4s ease,toastout .4s ease 2s forwards;pointer-events:none}
+@keyframes toastin{from{opacity:0;transform:translateX(-50%) translateY(-20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@keyframes toastout{to{opacity:0;transform:translateX(-50%) translateY(-20px)}}
+.progress-bar{height:6px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden;width:100%}
+.progress-fill{height:100%;border-radius:3px;background:var(--ac);transition:width .3s;box-shadow:0 0 8px var(--ag)}
+.hint-text{color:var(--txm);font-size:.85rem;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:.5}50%{opacity:1}}
+.btn{padding:12px 32px;border-radius:12px;font-weight:700;cursor:pointer;transition:all .25s;border:none;font-family:'Cairo',sans-serif;font-size:.95rem}
+.btn:hover{transform:translateY(-2px)}.btn:active{transform:scale(.97)}
+.btn-ac{background:var(--ac);color:#000;box-shadow:0 4px 20px var(--ag)}
+.btn-gh{background:var(--glass);color:var(--tx);border:1px solid var(--gb)}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--gb);border-radius:3px}
+@media(max-width:640px){.char{font-size:.95rem}.typing-zone{padding:16px}.stat-card{min-width:70px;padding:10px}.stat-val{font-size:1.2rem}.lvl-grid{grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:8px}}
+</style>
+</head>
+<body>
+<canvas id="bgc"></canvas>
+<div id="confetti"></div>
+<div id="app">
+
+<div id="scr-home" class="scr act">
+  <div class="w-full max-w-4xl mx-auto flex flex-col items-center gap-6 pt-6">
+    <div class="glass flex items-center gap-2 px-4 py-2 flex-wrap justify-center" id="theme-row"></div>
+    <div class="text-center mt-4">
+      <h1 class="text-4xl sm:text-5xl font-black tracking-tight" style="color:var(--ac)">SpeedNest</h1>
+      <p class="text-lg mt-2" style="color:var(--txm)">اكتب الإنجليزية وترجمتها العربية لتتقدم عبر 200 مستوى</p>
+    </div>
+    <div class="flex gap-2 flex-wrap justify-center" id="cat-tabs"></div>
+    <div class="glass-s w-full p-5">
+      <div class="lvl-grid" id="lvl-grid"></div>
+    </div>
+    <div class="flex gap-3 flex-wrap justify-center mt-2 mb-8" id="home-stats"></div>
+    <div class="text-center pb-6 text-sm font-bold" style="color:var(--txm)">
+      جميع الحقوق محفوظة لـ Ahmed mostafa &copy; 2026
+    </div>
+  </div>
+</div>
+
+<div id="scr-game" class="scr" onclick="focusInput()">
+  <input type="text" id="hidden-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="position: fixed; opacity: 0; pointer-events: none;">
+  
+  <div class="w-full max-w-3xl mx-auto flex flex-col items-center gap-5 pt-4">
+    <div class="glass flex items-center justify-between w-full px-5 py-3 flex-wrap gap-3">
+      <button class="btn btn-gh text-sm px-4 py-2" onclick="goHome()"><i class="fas fa-arrow-right ml-2"></i>رجوع</button>
+      <div class="flex items-center gap-2">
+        <span class="text-sm" style="color:var(--txm)">مستوى</span>
+        <span class="font-black text-lg" style="color:var(--ac)" id="g-lvl">1</span>
+      </div>
+      <div class="flex items-center gap-4 text-sm">
+        <div><i class="fas fa-clock ml-1" style="color:var(--txm)"></i><span id="g-time" class="font-bold">00:00</span></div>
+        <div><i class="fas fa-tachometer-alt ml-1" style="color:var(--txm)"></i><span id="g-wpm" class="font-bold">0</span> <span style="color:var(--txm)">ك/د</span></div>
+        <div><i class="fas fa-bullseye ml-1" style="color:var(--txm)"></i><span id="g-acc" class="font-bold">100%</span></div>
+      </div>
+    </div>
+    <div class="flex gap-3 items-center">
+      <div class="phase-tab on" id="ph-en">English</div>
+      <i class="fas fa-arrow-left" style="color:var(--txm);font-size:.7rem"></i>
+      <div class="phase-tab off" id="ph-ar">العربية</div>
+    </div>
+    <div class="glass typing-zone active-zone" id="zone-en" dir="ltr">
+      <div class="text-xs font-bold mb-3 flex items-center gap-2" style="color:var(--ac)"><i class="fas fa-globe"></i> English Text</div>
+      <div id="en-text" class="leading-8 select-none" style="min-height:60px"></div>
+    </div>
+    <div class="glass typing-zone dim" id="zone-ar" dir="rtl">
+      <div class="text-xs font-bold mb-3 flex items-center gap-2" style="color:var(--ac)"><i class="fas fa-language"></i> الترجمة العربية</div>
+      <div id="ar-text" class="leading-8 select-none" style="min-height:60px;font-family:'Cairo',sans-serif"></div>
+    </div>
+    <div class="w-full">
+      <div class="progress-bar"><div class="progress-fill" id="g-prog" style="width:0%"></div></div>
+      <div class="flex justify-between mt-2 text-xs" style="color:var(--txm)">
+        <span>الإنجليزية</span><span>العربية</span>
+      </div>
+    </div>
+    <p class="hint-text" id="g-hint"><i class="fas fa-keyboard ml-1"></i> اضغط هنا لإظهار لوحة المفاتيح والبدء بالكتابة...</p>
+  </div>
+</div>
+
+<div id="scr-result" class="scr">
+  <div class="w-full max-w-md mx-auto flex flex-col items-center gap-6 justify-center" style="min-height:80vh">
+    <div class="glass-s p-8 w-full text-center flex flex-col items-center gap-5">
+      <h2 class="text-2xl font-black" style="color:var(--ac)">أحسنت</h2>
+      <div class="flex gap-3" id="res-stars"></div>
+      <div class="grid grid-cols-3 gap-3 w-full">
+        <div class="stat-card glass"><div class="stat-val" id="res-time">00:00</div><div class="stat-lbl">الوقت</div></div>
+        <div class="stat-card glass"><div class="stat-val" id="res-wpm">0</div><div class="stat-lbl">كلمة/دقيقة</div></div>
+        <div class="stat-card glass"><div class="stat-val" id="res-acc">100%</div><div class="stat-lbl">الدقة</div></div>
+      </div>
+      <div class="flex gap-3 mt-2 flex-wrap justify-center">
+        <button class="btn btn-gh" onclick="retryLevel()"><i class="fas fa-redo ml-2"></i>إعادة</button>
+        <button class="btn btn-ac" id="btn-next" onclick="nextLevel()">المستوى التالي <i class="fas fa-arrow-left mr-2"></i></button>
+        <button class="btn btn-gh" onclick="goHome()"><i class="fas fa-home ml-2"></i>القائمة</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+
+const S=[
+["The cat sat on the mat.","جلست القطة على البساط."],
+["I love reading books.","أحب قراءة الكتب."],
+["The sun is very bright today.","الشمس ساطعة جدا اليوم."],
+["She goes to school every day.","تذهب إلى المدرسة كل يوم."],
+["We had dinner at seven o'clock.","تناولنا العشاء في الساعة السابعة."],
+["The dog is playing in the garden.","الكلب يلعب في الحديقة."],
+["He bought a new car last week.","اشترى سيارة جديدة الأسبوع الماضي."],
+["They are going to the park now.","هم ذاهبون إلى الحديقة الآن."],
+["I need to buy some milk.","أحتاج أن أشتري بعض الحليب."],
+["The weather is getting colder.","الطقس يصبح أبرد."],
+["She speaks three languages fluently.","تتحدث ثلاث لغات بطلاقة."],
+["The train arrives at noon.","القطار يصل عند الظهر."],
+["We should protect the environment.","يجب علينا حماية البيئة."],
+["He works as a software engineer.","يعمل كمهندس برمجيات."],
+["The children are sleeping now.","الأطفال نائمون الآن."],
+["I visited Paris last summer.","زرت باريس الصيف الماضي."],
+["The cake smells delicious.","الكيكة رائحتها لذيذة."],
+["They built a new hospital.","بنوا مستشفى جديدا."],
+["She writes poems in her free time.","تكتب الشعر في وقت فراغها."],
+["The river flows to the sea.","النهر يجري نحو البحر."],
+["Technology changes our daily lives.","التكنولوجيا تغير حياتنا اليومية."],
+["Education is the key to success.","التعليم هو مفتاح النجاح."],
+["The moon was full last night.","كان القمر بدرا الليلة الماضية."],
+["He finished the project on time.","أنهى المشروع في الوقت المحدد."],
+["We learned a lot from that experience.","تعلمنا الكثير من تلك التجربة."],
+["The mountain is covered with snow.","الجبل مغطى بالثلوج."],
+["She opened the window to get fresh air.","فتحت النافذة للحصول على هواء نقي."],
+["The concert starts at eight.","الحفلة تبدأ في الثامنة."],
+["I usually wake up early.","عادة أستيقظ مبكرا."],
+["The flowers are blooming beautifully.","الزهور تتفتح بجمال."],
+["He solved the problem quickly.","حل المشكلة بسرعة."],
+["We need to make a decision soon.","نحتاج أن نتخذ قرارا قريبا."],
+["The library is closed on Sundays.","المكتبة مغلقة أيام الأحد."],
+["She teaches mathematics at university.","تدرس الرياضيات في الجامعة."],
+["The food was amazing at that restaurant.","الطعام كان مذهلا في ذلك المطعم."],
+["They traveled around the world.","سافروا حول العالم."],
+["I forgot my password again.","نسيت كلمة المرور مرة أخرى."],
+["The storm destroyed several houses.","العاصفة دمرت عدة منازل."],
+["He plays the piano very well.","يعزف البيانو بشكل جيد جدا."],
+["We celebrated his birthday yesterday.","احتفلنا بعيد ميلاده أمس."],
+["The internet connection is very slow.","اتصال الإنترنت بطيء جدا."],
+["She designed a beautiful website.","صممت موقعا جميلا."],
+["The scientist discovered a new species.","العالم اكتشف نوعا جديدا."],
+["I prefer tea over coffee.","أفضل الشاي على القهوة."],
+["The bridge connects two cities.","الجسر يربط مدينتين."],
+["They planted trees in the neighborhood.","زرعوا الأشجار في الحي."],
+["He reads the newspaper every morning.","يقرأ الجريدة كل صباح."],
+["The movie was very interesting.","الفيلم كان ممتعا جدا."],
+["We should eat more vegetables.","يجب أن نأكل المزيد من الخضروات."],
+["The airplane landed safely.","هبطت الطائرة بأمان."]
+];
+
+const TH=[
+{n:"محيط منتصف الليل",bg:"#0a1628",bg2:"#0f2035",g:"rgba(15,40,80,0.35)",gb:"rgba(60,130,200,0.15)",tx:"#e0eaff",tm:"#5a7a9a",ac:"#00d4ff",ag:"rgba(0,212,255,0.25)",tc:0x00aaff},
+{n:"كثبان رملية",bg:"#1a1408",bg2:"#2a2010",g:"rgba(60,45,15,0.4)",gb:"rgba(180,140,60,0.18)",tx:"#f5e6c8",tm:"#8a7a5a",ac:"#ffaa00",ag:"rgba(255,170,0,0.25)",tc:0xffaa00},
+{n:"غابة الزمرد",bg:"#061a0c",bg2:"#0a2812",g:"rgba(10,50,25,0.4)",gb:"rgba(0,200,100,0.15)",tx:"#d0f5e0",tm:"#4a8a5a",ac:"#00e676",ag:"rgba(0,230,118,0.25)",tc:0x00cc66},
+{n:"حديقة الورود",bg:"#1a0810",bg2:"#280f1a",g:"rgba(60,15,35,0.4)",gb:"rgba(255,100,150,0.15)",tx:"#f5d0e0",tm:"#8a5a6a",ac:"#ff6b9d",ag:"rgba(255,107,157,0.25)",tc:0xff5588},
+{n:"بركان متوهج",bg:"#1a0a06",bg2:"#281008",g:"rgba(60,20,10,0.4)",gb:"rgba(255,100,50,0.15)",tx:"#f5ddd0",tm:"#8a6a5a",ac:"#ff6b35",ag:"rgba(255,107,53,0.25)",tc:0xff5500},
+{n:"صقيع قطبي",bg:"#0a1520",bg2:"#0f2030",g:"rgba(20,50,80,0.35)",gb:"rgba(136,221,255,0.15)",tx:"#e0f5ff",tm:"#5a8aaa",ac:"#88ddff",ag:"rgba(136,221,255,0.25)",tc:0x66bbee},
+{n:"طوكيو المضيئة",bg:"#0a0015",bg2:"#150025",g:"rgba(30,0,60,0.4)",gb:"rgba(255,0,200,0.15)",tx:"#f0d0ff",tm:"#7a5a8a",ac:"#ff00cc",ag:"rgba(255,0,204,0.25)",tc:0xcc00ff},
+{n:"شروق ذهبي",bg:"#1a1008",bg2:"#281a0a",g:"rgba(60,40,10,0.4)",gb:"rgba(255,200,0,0.15)",tx:"#fff5d0",tm:"#8a7a4a",ac:"#ffd700",ag:"rgba(255,215,0,0.25)",tc:0xffcc00},
+{n:"الفضاء العميق",bg:"#050510",bg2:"#0a0a20",g:"rgba(15,10,40,0.4)",gb:"rgba(150,100,255,0.12)",tx:"#e0d8ff",tm:"#5a508a",ac:"#9966ff",ag:"rgba(153,102,255,0.25)",tc:0x8855ee},
+{n:"نعناع وشوكولاتة",bg:"#0f0a06",bg2:"#1a1008",g:"rgba(40,30,15,0.4)",gb:"rgba(100,255,200,0.12)",tx:"#e0f5ee",tm:"#6a8a7a",ac:"#66ffcc",ag:"rgba(102,255,204,0.25)",tc:0x44ddaa},
+{n:"شعاب مرجانية",bg:"#081a1a",bg2:"#0a2828",g:"rgba(10,50,50,0.4)",gb:"rgba(255,100,100,0.12)",tx:"#ffe0e0",tm:"#7a6a6a",ac:"#ff6b6b",ag:"rgba(255,107,107,0.25)",tc:0xff5555},
+{n:"حلم اللافندر",bg:"#120a1a",bg2:"#1c1028",g:"rgba(35,20,55,0.4)",gb:"rgba(187,136,255,0.12)",tx:"#eed8ff",tm:"#6a5a8a",ac:"#bb88ff",ag:"rgba(187,136,255,0.25)",tc:0xaa66ee},
+{n:"عاصفة رعدية",bg:"#0a0e14",bg2:"#101820",g:"rgba(20,30,45,0.4)",gb:"rgba(68,136,255,0.15)",tx:"#d0e0ff",tm:"#5a6a8a",ac:"#4488ff",ag:"rgba(68,136,255,0.25)",tc:0x3377ee},
+{n:"أزهار الكرز",bg:"#1a0a14",bg2:"#28101e",g:"rgba(50,15,35,0.4)",gb:"rgba(255,136,170,0.12)",tx:"#ffe0ee",tm:"#8a5a6a",ac:"#ff88aa",ag:"rgba(255,136,170,0.25)",tc:0xff6699},
+{n:"طرفية سايبر",bg:"#000a00",bg2:"#001500",g:"rgba(0,30,10,0.4)",gb:"rgba(0,255,100,0.12)",tx:"#d0ffd0",tm:"#4a7a4a",ac:"#00ff66",ag:"rgba(0,255,102,0.25)",tc:0x00dd55},
+{n:"خريف ذهبي",bg:"#1a0e06",bg2:"#281508",g:"rgba(50,30,10,0.4)",gb:"rgba(255,136,68,0.15)",tx:"#ffe8d0",tm:"#8a6a4a",ac:"#ff8844",ag:"rgba(255,136,68,0.25)",tc:0xee6622},
+{n:"نسيم المحيط",bg:"#081a18",bg2:"#0a2825",g:"rgba(10,50,45,0.4)",gb:"rgba(0,220,180,0.12)",tx:"#d0fff5",tm:"#5a8a7a",ac:"#00ddbb",ag:"rgba(0,221,187,0.25)",tc:0x00bbaa},
+{n:"ليلة الياقوت",bg:"#1a0508",bg2:"#280a10",g:"rgba(50,10,18,0.4)",gb:"rgba(255,34,68,0.15)",tx:"#ffd0d5",tm:"#8a4a50",ac:"#ff2244",ag:"rgba(255,34,68,0.25)",tc:0xee1133},
+{n:"عاصفة رملية",bg:"#1a1610",bg2:"#28221a",g:"rgba(50,40,25,0.4)",gb:"rgba(220,200,60,0.12)",tx:"#fff8d0",tm:"#8a8050",ac:"#eedd44",ag:"rgba(238,221,68,0.25)",tc:0xddcc22},
+{n:"أضواء الشمال",bg:"#050f0a",bg2:"#081a12",g:"rgba(10,40,25,0.4)",gb:"rgba(68,255,170,0.12)",tx:"#d0ffe8",tm:"#4a8a6a",ac:"#44ffaa",ag:"rgba(68,255,170,0.25)",tc:0x33dd88}
+];
+
+let curTheme=0, curLevel=1, curCat=0;
+let progress=loadProg();
+let enText="",arText="",enIn="",arIn="",phase="en",errs=0,totalTyped=0,startTime=null,timerIv=null,finished=false,lastVal="";
+let mouseX=0,mouseY=0;
+
+const CATS=[
+{n:"مبتدئ",from:1,to:40},{n:"متوسط",from:41,to:80},{n:"متقدم",from:81,to:120},
+{n:"خبير",from:121,to:160},{n:"محترف",from:161,to:200}
+];
+
+function loadProg(){
+  try{return JSON.parse(localStorage.getItem('tmp_prog'))||{completed:{},theme:0}}catch(e){return{completed:{},theme:0}}
+}
+function saveProg(){localStorage.setItem('tmp_prog',JSON.stringify(progress))}
+
+function getLvlContent(lv){
+  let cnt;
+  if(lv<=20)cnt=1;else if(lv<=50)cnt=2;else if(lv<=80)cnt=3;else if(lv<=120)cnt=4;else if(lv<=160)cnt=5;else cnt=6;
+  let si=((lv-1)*7)%S.length;
+  let sel=[];
+  for(let i=0;i<cnt;i++)sel.push(S[(si+i)%S.length]);
+  return{en:sel.map(s=>s[0]).join(' '),ar:sel.map(s=>s[1]).join(' ')};
+}
+
+function isUnlocked(lv){return lv===1||progress.completed[lv-1]}
+function getStars(lv){return progress.completed[lv]?.stars||0}
+
+function applyTheme(i){
+  curTheme=i;
+  progress.theme=i;saveProg();
+  const t=TH[i],r=document.documentElement.style;
+  r.setProperty('--bg',t.bg);r.setProperty('--bg2',t.bg2);
+  r.setProperty('--glass',t.g);r.setProperty('--gb',t.gb);
+  r.setProperty('--tx',t.tx);r.setProperty('--txm',t.tm);
+  r.setProperty('--ac',t.ac);r.setProperty('--ag',t.ag);
+  document.body.style.background=t.bg;
+  
+  if(renderer)renderer.setClearColor(new THREE.Color(t.bg));
+  if(scene&&scene.fog)scene.fog.color.set(t.bg);
+  meshes.forEach(m=>{m.material.color.set(t.tc);m.material.opacity=0.15+Math.random()*0.1});
+  
+  document.querySelectorAll('.theme-dot').forEach((d,j)=>{
+    d.classList.toggle('on',j===i);
+  });
+}
+
+let scene,camera,renderer,meshes=[];
+function initThree(){
+  const cv=document.getElementById('bgc');
+  scene=new THREE.Scene();
+  scene.fog=new THREE.FogExp2(TH[curTheme].bg,0.035);
+  camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,0.1,100);
+  camera.position.z=12;
+  renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:false});
+  renderer.setSize(innerWidth,innerHeight);
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.setClearColor(new THREE.Color(TH[curTheme].bg));
+
+  const geos=[
+    new THREE.IcosahedronGeometry(1,0),new THREE.OctahedronGeometry(1,0),
+    new THREE.TorusGeometry(.7,.25,8,16),new THREE.BoxGeometry(1,1,1),
+    new THREE.TetrahedronGeometry(1,0),new THREE.DodecahedronGeometry(.8,0),
+    new THREE.TorusKnotGeometry(.6,.18,48,8)
+  ];
+
+  for(let i=0;i<18;i++){
+    const geo=geos[i%geos.length];
+    const edges=new THREE.EdgesGeometry(geo);
+    const mat=new THREE.LineBasicMaterial({color:TH[curTheme].tc,transparent:true,opacity:0.15+Math.random()*0.12});
+    const mesh=new THREE.LineSegments(edges,mat);
+    const s=0.5+Math.random()*1.8;
+    mesh.scale.set(s,s,s);
+    mesh.position.set((Math.random()-0.5)*25,(Math.random()-0.5)*18,(Math.random()-0.5)*15-3);
+    mesh.rotation.set(Math.random()*Math.PI,Math.random()*Math.PI,Math.random()*Math.PI);
+    mesh.userData={rx:(Math.random()-0.5)*0.008,ry:(Math.random()-0.5)*0.008,rz:(Math.random()-0.5)*0.005,
+      fy:Math.random()*Math.PI*2,fs:0.3+Math.random()*0.5,fa:0.3+Math.random()*0.5,by:mesh.position.y};
+    scene.add(mesh);
+    meshes.push(mesh);
+  }
+
+  window.addEventListener('resize',()=>{
+    camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();
+    renderer.setSize(innerWidth,innerHeight);
+  });
+  document.addEventListener('mousemove',e=>{
+    mouseX=(e.clientX/innerWidth-0.5)*2;mouseY=(e.clientY/innerHeight-0.5)*2;
+  });
+
+  animate();
+}
+function animate(){
+  requestAnimationFrame(animate);
+  const t=performance.now()*0.001;
+  meshes.forEach(m=>{
+    m.rotation.x+=m.userData.rx;m.rotation.y+=m.userData.ry;m.rotation.z+=m.userData.rz;
+    m.position.y=m.userData.by+Math.sin(t*m.userData.fs+m.userData.fy)*m.userData.fa;
+  });
+  camera.position.x+=(mouseX*1.5-camera.position.x)*0.03;
+  camera.position.y+=(-mouseY*1-camera.position.y)*0.03;
+  camera.lookAt(0,0,0);
+  renderer.render(scene,camera);
+}
+
+function showScr(name){
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('act'));
+  document.getElementById('scr-'+name).classList.add('act');
+}
+
+function renderHome(){
+  const row=document.getElementById('theme-row');
+  row.innerHTML=TH.map((t,i)=>`<div class="theme-dot ${i===curTheme?'on':''}" style="background:${t.ac}" title="${t.n}" data-ti="${i}"></div>`).join('');
+  row.querySelectorAll('.theme-dot').forEach(d=>{
+    d.addEventListener('click',()=>applyTheme(+d.dataset.ti));
+  });
+  
+  const tabs=document.getElementById('cat-tabs');
+  tabs.innerHTML=CATS.map((c,i)=>{
+    const done=Object.keys(progress.completed).filter(k=>+k>=c.from&&+k<=c.to).length;
+    return`<div class="cat-tab ${i===curCat?'on':''}" data-ci="${i}">${c.n} <span style="color:var(--ac);font-size:.75rem">(${done}/${c.to-c.from+1})</span></div>`;
+  }).join('');
+  tabs.querySelectorAll('.cat-tab').forEach(t=>{
+    t.addEventListener('click',()=>{curCat=+t.dataset.ci;renderHome()});
+  });
+  
+  const grid=document.getElementById('lvl-grid');
+  const cat=CATS[curCat];
+  let html='';
+  for(let lv=cat.from;lv<=cat.to;lv++){
+    const unlocked=isUnlocked(lv);
+    const stars=getStars(lv);
+    let cls='lvl-card '+(unlocked?'unlocked':'locked');
+    if(stars>=3)cls='lvl-card unlocked stars3';
+    else if(stars>=1)cls='lvl-card unlocked done';
+    const starStr=stars>0?'<i class="fas fa-star"></i>'.repeat(stars)+'<i class="far fa-star"></i>'.repeat(3-stars):'';
+    html+=`<div class="${cls}" data-lv="${lv}"><span>${lv}</span>${stars>0?`<div class="stars">${starStr}</div>`:''}</div>`;
+  }
+  grid.innerHTML=html;
+  grid.querySelectorAll('.lvl-card.unlocked').forEach(c=>{
+    c.addEventListener('click',()=>startLevel(+c.dataset.lv));
+  });
+  
+  const completed=Object.keys(progress.completed).length;
+  const allWpms=Object.values(progress.completed).map(v=>v.wpm);
+  const allAccs=Object.values(progress.completed).map(v=>v.acc);
+  const allStars=Object.values(progress.completed).reduce((s,v)=>s+v.stars,0);
+  const avgWpm=allWpms.length?Math.round(allWpms.reduce((a,b)=>a+b,0)/allWpms.length):0;
+  const bestAcc=allAccs.length?Math.max(...allAccs):0;
+  document.getElementById('home-stats').innerHTML=`
+    <div class="stat-card glass"><div class="stat-val">${completed}</div><div class="stat-lbl">مكتمل</div></div>
+    <div class="stat-card glass"><div class="stat-val">${avgWpm}</div><div class="stat-lbl">متوسط ك/د</div></div>
+    <div class="stat-card glass"><div class="stat-val">${bestAcc}%</div><div class="stat-lbl">أفضل دقة</div></div>
+    <div class="stat-card glass"><div class="stat-val">${allStars}</div><div class="stat-lbl">نجوم</div></div>
+    <div class="stat-card glass"><div class="stat-val">200</div><div class="stat-lbl">إجمالي</div></div>
+  `;
+}
+
+window.focusInput = () => {
+  const inp = document.getElementById('hidden-input');
+  if(inp) inp.focus();
+};
+
+function startLevel(lv){
+  curLevel=lv;
+  const c=getLvlContent(lv);
+  enText=c.en;arText=c.ar;enIn="";arIn="";
+  phase="en";errs=0;totalTyped=0;startTime=null;finished=false;lastVal="";
+  if(timerIv)clearInterval(timerIv);timerIv=null;
+  
+  document.getElementById('hidden-input').value = "";
+  document.getElementById('g-lvl').textContent=lv;
+  document.getElementById('g-time').textContent='00:00';
+  document.getElementById('g-wpm').textContent='0';
+  document.getElementById('g-acc').textContent='100%';
+  document.getElementById('g-prog').style.width='0%';
+  document.getElementById('g-hint').style.display='block';
+  
+  updatePhaseUI();
+  renderText();
+  showScr('game');
+  setTimeout(focusInput, 150);
+}
+
+function updatePhaseUI(){
+  const ze=document.getElementById('zone-en'),za=document.getElementById('zone-ar');
+  const pe=document.getElementById('ph-en'),pa=document.getElementById('ph-ar');
+  if(phase==='en'){
+    ze.classList.add('active-zone');ze.classList.remove('dim');
+    za.classList.remove('active-zone');za.classList.add('dim');
+    pe.classList.add('on');pe.classList.remove('off');
+    pa.classList.remove('on');pa.classList.add('off');
+  }else{
+    za.classList.add('active-zone');za.classList.remove('dim');
+    ze.classList.remove('active-zone');ze.classList.add('dim');
+    pa.classList.add('on');pa.classList.remove('off');
+    pe.classList.remove('on');pe.classList.add('off');
+    showToast('انتقل إلى لوحة المفاتيح العربية','var(--ac)');
+  }
+}
+
+function renderText(){
+  document.getElementById('en-text').innerHTML=renderChars(enText,enIn,phase==='en');
+  document.getElementById('ar-text').innerHTML=renderChars(arText,arIn,phase==='ar');
+}
+
+function renderChars(text,input,active){
+  return text.split('').map((ch,i)=>{
+    let cls='char ';
+    if(i<input.length){
+      cls+=input[i]===ch?'ok':'no';
+    }else if(i===input.length&&active){
+      cls+='cur';
+    }else{
+      cls+='pen';
+    }
+    const d=ch===' '?'&nbsp;':ch.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return`<span class="${cls}">${d}</span>`;
+  }).join('');
+}
+
+document.getElementById('hidden-input').addEventListener('input', e => {
+  if(finished) return;
+  
+  if(!startTime){
+    startTime = Date.now();
+    document.getElementById('g-hint').style.display = 'none';
+    timerIv = setInterval(updateTimer, 100);
+  }
+  
+  let val = e.target.value;
+  const ref = phase === 'en' ? enText : arText;
+  
+  if(val.length > ref.length) {
+    val = val.substring(0, ref.length);
+    e.target.value = val;
+  }
+
+  if(val.length > lastVal.length) {
+    for(let i=lastVal.length; i<val.length; i++){
+      totalTyped++;
+      if(val[i] !== ref[i]) errs++;
+    }
+  }
+  
+  lastVal = val;
+  if(phase === 'en') enIn = val; else arIn = val;
+  
+  if(val.length >= ref.length){
+    if(phase === 'en'){
+      phase = 'ar';
+      e.target.value = "";
+      lastVal = "";
+      updatePhaseUI();
+    }else{
+      finishLevel();
+      return;
+    }
+  }
+  
+  updateProgress();
+  renderText();
+});
+
+function updateProgress(){
+  const enPct=(enIn.length/enText.length)*50;
+  const arPct=phase==='ar'?(arIn.length/arText.length)*50:0;
+  document.getElementById('g-prog').style.width=(enPct+arPct)+'%';
+}
+
+function updateTimer(){
+  if(!startTime)return;
+  const el=Math.floor((Date.now()-startTime)/1000);
+  const m=String(Math.floor(el/60)).padStart(2,'0');
+  const s=String(el%60).padStart(2,'0');
+  document.getElementById('g-time').textContent=m+':'+s;
+  const mins=(Date.now()-startTime)/60000;
+  if(mins>0){
+    const chars=enIn.length+arIn.length;
+    document.getElementById('g-wpm').textContent=Math.round((chars/5)/mins);
+  }
+  const acc=totalTyped>0?Math.round(((totalTyped-errs)/totalTyped)*100):100;
+  document.getElementById('g-acc').textContent=acc+'%';
+}
+
+function finishLevel(){
+  finished=true;
+  if(timerIv)clearInterval(timerIv);
+  const el=(Date.now()-startTime)/1000;
+  const mins=el/60;
+  const chars=enIn.length+arIn.length;
+  const wpm=mins>0?Math.round((chars/5)/mins):0;
+  const acc=totalTyped>0?Math.round(((totalTyped-errs)/totalTyped)*100):100;
+
+  let stars=1;
+  if(acc>=90)stars=2;
+  if(acc>=95){
+    const thresh=curLevel<=40?20:curLevel<=80?30:curLevel<=120?40:curLevel<=160?50:60;
+    if(wpm>=thresh)stars=3;
+  }
+
+  const oldStars=getStars(curLevel);
+  if(stars>oldStars){
+    progress.completed[curLevel]={wpm,acc,stars,time:el};
+  }else if(!progress.completed[curLevel]){
+    progress.completed[curLevel]={wpm,acc,stars,time:el};
+  }
+  saveProg();
+
+  const m=String(Math.floor(el/60)).padStart(2,'0');
+  const s=String(Math.floor(el%60)).padStart(2,'0');
+  document.getElementById('res-time').textContent=m+':'+s;
+  document.getElementById('res-wpm').textContent=wpm;
+  document.getElementById('res-acc').textContent=acc+'%';
+  document.getElementById('res-stars').innerHTML=[1,2,3].map((i,j)=>
+    `<i class="fas fa-star result-star ${j<stars?'lit':''}" style="animation-delay:${j*0.2}s"></i>`
+  ).join('');
+  document.getElementById('btn-next').style.display=curLevel<200?'inline-flex':'none';
+
+  showScr('result');
+  if(stars>=2)showConfetti();
+}
+
+function showToast(msg,color){
+  const t=document.createElement('div');
+  t.className='toast glass';t.textContent=msg;
+  t.style.background='var(--glass)';t.style.color=color||'var(--tx)';
+  t.style.border=`1px solid ${color||'var(--gb)'}`;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),2500);
+}
+
+function showConfetti(){
+  const c=document.getElementById('confetti');
+  const cols=['#ffd700','#ff6b9d','#00e676','#00d4ff','#ff6b35','#bb88ff'];
+  for(let i=0;i<60;i++){
+    const p=document.createElement('div');p.className='cpiece';
+    p.style.left=Math.random()*100+'%';
+    p.style.backgroundColor=cols[Math.floor(Math.random()*cols.length)];
+    p.style.animationDelay=Math.random()*0.6+'s';
+    p.style.animationDuration=(1.5+Math.random()*1.5)+'s';
+    p.style.width=(6+Math.random()*6)+'px';
+    p.style.height=(8+Math.random()*10)+'px';
+    p.style.borderRadius=Math.random()>0.5?'50%':'2px';
+    c.appendChild(p);
+  }
+  setTimeout(()=>c.innerHTML='',3500);
+}
+
+window.goHome=function(){
+  if(timerIv)clearInterval(timerIv);finished=true;
+  renderHome();showScr('home');
+};
+window.retryLevel=function(){startLevel(curLevel)};
+window.nextLevel=function(){if(curLevel<200)startLevel(curLevel+1)};
+
+applyTheme(progress.theme||0);
+initThree();
+renderHome();
+
+</script>
+</body>
+</html>
