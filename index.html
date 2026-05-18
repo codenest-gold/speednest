@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SpeedNest | سرعه الكتابه</title>
+  <meta name="theme-color" content="#050816" />
+  <style>
+    :root{
+      --bg0:#061a0c;
+      --bg1:#0a2812;
+      --bg2:#10361a;
+      --card:rgba(8,14,29,.72);
+      --line:rgba(90,255,240,.14);
+      --text:#eaf7ff;
+      --muted:#a9bfd7;
+      --cyan:#00e676;
+      --pink:#1cff8c;
+      --shadow:0 0 0 1px rgba(94,252,255,.10), 0 18px 50px rgba(0,0,0,.42), 0 0 40px rgba(94,252,255,.06);
+      --radius:24px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Tahoma,Arial,sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at 10% 10%, rgba(88,255,240,.08), transparent 20%),
+        radial-gradient(circle at 90% 20%, rgba(255,79,216,.06), transparent 18%),
+        linear-gradient(180deg, var(--bg0), var(--bg1) 45%, var(--bg2));
+      overflow-x:hidden;
+    }
+
+    .bg-lines::before{
+      content:"";
+      position:fixed;
+      inset:-20%;
+      pointer-events:none;
+      background:
+        linear-gradient(rgba(94,252,255,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(94,252,255,.04) 1px, transparent 1px);
+      background-size:48px 48px;
+      mask-image: radial-gradient(circle at center, black 22%, transparent 72%);
+      opacity:.34;
+      z-index:0;
+    }
+
+    .wrap{
+      position:relative;
+      z-index:1;
+      min-height:100%;
+      display:grid;
+      place-items:center;
+      padding:18px;
+    }
+
+    .panel{
+      width:min(760px,100%);
+      border:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(10,16,32,.78), rgba(4,8,18,.80));
+      box-shadow:var(--shadow);
+      border-radius:var(--radius);
+      backdrop-filter: blur(16px);
+      padding:20px;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      margin-bottom:16px;
+    }
+    .logo{
+      width:54px;
+      height:54px;
+      border-radius:18px;
+      display:grid;
+      place-items:center;
+      font-size:28px;
+      background:linear-gradient(135deg, rgba(94,252,255,.16), rgba(255,79,216,.12));
+      border:1px solid rgba(94,252,255,.22);
+      box-shadow:0 0 28px rgba(94,252,255,.10);
+      flex:none;
+    }
+    .topbar h1{
+      margin:0;
+      font-size:clamp(26px, 4vw, 38px);
+      line-height:1.05;
+    }
+    .topbar p{
+      margin:6px 0 0;
+      color:var(--muted);
+      line-height:1.7;
+      font-size:14px;
+    }
+
+    .tabs{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      background:rgba(255,255,255,.03);
+      padding:8px;
+      border-radius:18px;
+      border:1px solid rgba(94,252,255,.10);
+      margin-bottom:14px;
+    }
+    .tab{
+      border:0;
+      border-radius:14px;
+      padding:13px 12px;
+      color:var(--muted);
+      background:transparent;
+      cursor:pointer;
+      font-weight:700;
+      font-size:15px;
+      transition:.2s ease;
+    }
+    .tab.active{
+      color:#fff;
+      background:linear-gradient(135deg, rgba(94,252,255,.18), rgba(255,79,216,.12));
+      box-shadow:0 0 0 1px rgba(94,252,255,.18);
+    }
+
+    .head{margin:4px 0 16px}
+    .head h2{margin:0 0 6px; font-size:26px}
+    .head p{margin:0; color:var(--muted); line-height:1.75}
+
+    form{display:grid; gap:12px}
+    .grid2{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+    .field label{
+      display:block;
+      margin:0 0 8px;
+      color:#dceeff;
+      font-size:13px;
+      font-weight:700;
+    }
+    .field input, .field select{
+      width:100%;
+      border:1px solid rgba(94,252,255,.14);
+      background:rgba(4,10,22,.72);
+      color:var(--text);
+      border-radius:16px;
+      padding:14px 15px;
+      outline:none;
+      transition:.2s ease;
+    }
+    .field input:focus, .field select:focus{
+      border-color:rgba(94,252,255,.42);
+      box-shadow:0 0 0 4px rgba(94,252,255,.08);
+    }
+
+    .phone-wrapper {
+      display: flex;
+      gap: 8px;
+    }
+    .phone-wrapper select {
+      flex: 0 0 110px;
+      padding: 14px 8px;
+    }
+    .phone-wrapper select option {
+      background: #040a16;
+      color: #fff;
+    }
+
+    .photo-row{
+      display:flex;
+      gap:16px;
+      align-items:center;
+      background:rgba(255,255,255,.02);
+      padding:12px;
+      border-radius:20px;
+      border:1px solid rgba(94,252,255,.05);
+    }
+    .avatar-box{
+      width:70px;
+      height:70px;
+      border-radius:18px;
+      border:1px solid rgba(94,252,255,.16);
+      background:linear-gradient(180deg, rgba(7,13,27,.88), rgba(14,23,46,.8));
+      display:grid;
+      place-items:center;
+      overflow:hidden;
+      box-shadow:0 0 28px rgba(94,252,255,.06);
+      flex:none;
+    }
+    .avatar-emoji{
+      font-size:38px;
+      line-height:1;
+      display:grid;
+      place-items:center;
+      width:100%; height:100%;
+    }
+    .mini{font-size:13px; color:var(--muted); line-height:1.6}
+
+    .actions{display:grid; gap:10px; margin-top:2px}
+    .btn{
+      border:0;
+      cursor:pointer;
+      border-radius:16px;
+      padding:14px 16px;
+      font-weight:800;
+      font-size:15px;
+      color:#fff;
+      background:linear-gradient(135deg, rgba(94,252,255,.18), rgba(255,79,216,.14));
+      box-shadow:0 0 0 1px rgba(94,252,255,.16), 0 12px 28px rgba(7,14,28,.40);
+      transition:transform .2s ease, filter .2s ease, opacity .2s ease;
+    }
+    .btn:hover{transform:translateY(-1px); filter:brightness(1.05)}
+    .btn:disabled{opacity:.65; cursor:not-allowed; transform:none}
+    .btn.secondary{
+      background:rgba(255,255,255,.04);
+      box-shadow:inset 0 0 0 1px rgba(94,252,255,.10);
+      color:#eaf7ff;
+    }
+
+    .link-row{
+      display:none;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:2px;
+    }
+    .link-btn{
+      border:1px solid rgba(94,252,255,.14);
+      background:rgba(255,255,255,.03);
+      color:#eaf7ff;
+      border-radius:14px;
+      padding:11px 14px;
+      cursor:pointer;
+      font-weight:700;
+      font-size:13px;
+    }
+
+    .status{min-height:22px; color:#d9eeff; font-size:14px; line-height:1.6}
+    .status.error{color:#ffb7c7}
+    .status.ok{color:#b6ffd8}
+    .loading{display:none; align-items:center; gap:10px; font-size:14px; color:#d9eeff; padding-top:2px}
+    .spinner{
+      width:18px; height:18px; border-radius:50%;
+      border:2px solid rgba(255,255,255,.15);
+      border-top-color:var(--cyan);
+      animation:spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform:rotate(360deg) } }
+    .hidden{display:none !important}
+
+    @media (max-width: 640px){
+      .wrap{padding:12px}
+      .panel{border-radius:20px; padding:16px}
+      .grid2{grid-template-columns:1fr}
+      .topbar p{font-size:13px}
+    }
+  </style>
+</head>
+<body class="bg-lines">
+  <div class="wrap">
+    <main class="panel">
+      <div class="topbar">
+        <div class="logo">⚡</div>
+        <div>
+          <h1>SpeedNest</h1>
+          <p>سرعه الكتابه / قياس سرعه الكتابه</p>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <button class="tab active" id="tabSignup" type="button">إنشاء حساب</button>
+        <button class="tab" id="tabLogin" type="button">تسجيل دخول</button>
+      </div>
+
+      <div class="head">
+        <h2 id="formTitle">إنشاء حساب جديد</h2>
+        <p id="formSubtitle">املأ البيانات.</p>
+      </div>
+
+      <form id="authForm" autocomplete="on">
+        <div id="signupFields">
+          <div class="grid2">
+            <div class="field">
+              <label for="name">الاسم</label>
+              <input id="name" type="text" placeholder="اسمك الكامل" />
+            </div>
+            <div class="field">
+              <label for="age">السن</label>
+              <input id="age" type="number" min="1" max="120" placeholder="مثال: 18" />
+            </div>
+          </div>
+
+          <div class="grid2">
+            <div class="field">
+              <label for="email">البريد الإلكتروني</label>
+              <input id="email" type="email" placeholder="name@email.com" required />
+            </div>
+            <div class="field">
+              <label for="password">كلمة المرور</label>
+              <input id="password" type="password" minlength="6" placeholder="••••••••" required />
+            </div>
+          </div>
+
+          <div class="grid2">
+            <div class="field">
+              <label for="phone">رقم الهاتف</label>
+              <div class="phone-wrapper">
+                <select id="countryCode" dir="ltr">
+                  <option value="+20" selected>🇪🇬 +20</option>
+                  <option value="+966">🇸🇦 +966</option>
+                  <option value="+971">🇦🇪 +971</option>
+                  <option value="+965">🇰🇼 +965</option>
+                  <option value="+974">🇶🇦 +974</option>
+                  <option value="+968">🇴🇲 +968</option>
+                  <option value="+973">🇧🇭 +973</option>
+                  <option value="+962">🇯🇴 +962</option>
+                  <option value="+961">🇱🇧 +961</option>
+                  <option value="+964">🇮🇶 +964</option>
+                  <option value="+963">🇸🇾 +963</option>
+                  <option value="+970">🇵🇸 +970</option>
+                  <option value="+212">🇲🇦 +212</option>
+                  <option value="+213">🇩🇿 +213</option>
+                  <option value="+216">🇹🇳 +216</option>
+                  <option value="+218">🇱🇾 +218</option>
+                  <option value="+249">🇸🇩 +249</option>
+                  <option value="+1">🇺🇸/🇨🇦 +1</option>
+                  <option value="+44">🇬🇧 +44</option>
+                  <option value="">أخرى...</option>
+                </select>
+                <input id="phone" type="tel" placeholder="رقم هاتفك" />
+              </div>
+            </div>
+            <div class="field">
+              <label for="city">المدينة</label>
+              <input id="city" type="text" placeholder="مثال: القاهرة، الرياض..." />
+            </div>
+          </div>
+
+          <div class="grid2">
+            <div class="field">
+              <label for="gender">الجنس (اختياري)</label>
+              <input id="gender" type="text" list="genderList" placeholder="ولد أو بنت" />
+              <datalist id="genderList">
+                <option value="ولد"></option>
+                <option value="بنت"></option>
+              </datalist>
+            </div>
+            
+            <div class="photo-row">
+              <div class="avatar-box" aria-label="صورة البروفايل">
+                <div class="avatar-emoji" id="avatarEmoji">👤</div>
+              </div>
+              <div class="mini">
+                سيتم تحديد شكل الأفاتار بناءً على الجنس المدخل.
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div id="loginFields" class="hidden">
+          <div class="grid2">
+            <div class="field">
+              <label for="loginEmail">البريد الإلكتروني</label>
+              <input id="loginEmail" type="email" placeholder="name@email.com" />
+            </div>
+            <div class="field">
+              <label for="loginPassword">كلمة المرور</label>
+              <input id="loginPassword" type="password" minlength="6" placeholder="••••••••" />
+            </div>
+          </div>
+
+          <div class="link-row" id="loginLinks">
+            <button class="link-btn" id="forgotBtn" type="button">نسيت كلمة المرور؟</button>
+            <button class="link-btn" id="supportBtn" type="button">التواصل مع الدعم</button>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn" id="submitBtn" type="submit">إنشاء الحساب</button>
+          <button class="btn secondary" id="switchBtn" type="button">لديك حساب بالفعل؟ تسجيل دخول</button>
+        </div>
+
+        <div class="loading" id="loadingRow">
+          <div class="spinner"></div>
+          <div>جاري التحميل ...</div>
+        </div>
+
+        <div class="status" id="status"></div>
+      </form>
+    </main>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      updateProfile,
+      setPersistence,
+      browserLocalPersistence
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      setDoc,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBi-a06cP8HeI1QSSDSrtXxyVZEx7XgR0U",
+      authDomain: "speednest-c3b61.firebaseapp.com",
+      projectId: "speednest-c3b61",
+      storageBucket: "speednest-c3b61.firebasestorage.app",
+      messagingSenderId: "930360784623",
+      appId: "1:930360784623:web:c7cfcf80b407ecc35d4d1a",
+      measurementId: "G-NLTMTHWY9R"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    await setPersistence(auth, browserLocalPersistence);
+
+    function encodePlaySession(payload) {
+      try {
+        return btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+      } catch {
+        return "";
+      }
+    }
+
+    function generateUserId() {
+      return Math.floor(1000 + Math.random() * 9000).toString();
+    }
+
+    function buildPlaySession(user, extra = {}) {
+      const session = {
+        uid: user?.uid || "",
+        name: extra.name || user?.displayName || user?.name || "Player",
+        email: extra.email || user?.email || "",
+        avatarEmoji: extra.avatarEmoji || "👤",
+        age: extra.age ?? null,
+        phone: extra.phone || "",
+        city: extra.city || "",
+        gender: extra.gender || null,
+        coins: extra.coins ?? 0,
+        score: extra.score ?? 0,
+        bestRun: extra.bestRun ?? 0,
+        theme: extra.theme ?? 0,
+        progress: extra.progress || { completed: {}, theme: 0 },
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        userId: extra.userId || generateUserId()
+      };
+      return session;
+    }
+
+    function goToPlay(user, extra = {}) {
+      const session = buildPlaySession(user, extra);
+      const token = encodePlaySession(session);
+      const url = token ? `play.html?session=${encodeURIComponent(token)}` : "play.html";
+      if ((extra.email || user?.email || "").toLowerCase() === "0@gmail.com") {
+        window.location.href = "p1.html";
+        return;
+      }
+      window.location.href = url;
+    }
+
+    const emojiByGender = { "ولد": "👦", "بنت": "👧" };
+    const defaultEmoji = "👤";
+
+    const tabSignup = document.getElementById("tabSignup");
+    const tabLogin = document.getElementById("tabLogin");
+    const formTitle = document.getElementById("formTitle");
+    const formSubtitle = document.getElementById("formSubtitle");
+    const signupFields = document.getElementById("signupFields");
+    const loginFields = document.getElementById("loginFields");
+    const loginLinks = document.getElementById("loginLinks");
+    const submitBtn = document.getElementById("submitBtn");
+    const switchBtn = document.getElementById("switchBtn");
+    const forgotBtn = document.getElementById("forgotBtn");
+    const supportBtn = document.getElementById("supportBtn");
+    const authForm = document.getElementById("authForm");
+    const statusEl = document.getElementById("status");
+    const loadingRow = document.getElementById("loadingRow");
+    const avatarEmoji = document.getElementById("avatarEmoji");
+    const nameInput = document.getElementById("name");
+    const ageInput = document.getElementById("age");
+    const emailInput = document.getElementById("email");
+    const countryCodeInput = document.getElementById("countryCode");
+    const phoneInput = document.getElementById("phone");
+    const cityInput = document.getElementById("city");
+    const genderInput = document.getElementById("gender");
+    const passwordInput = document.getElementById("password");
+    const loginEmailInput = document.getElementById("loginEmail");
+    const loginPasswordInput = document.getElementById("loginPassword");
+
+    let mode = "signup";
+
+    function setStatus(msg, type = "") {
+      statusEl.className = `status ${type}`.trim();
+      statusEl.textContent = msg || "";
+    }
+
+    function setLoading(isLoading) {
+      loadingRow.style.display = isLoading ? "flex" : "none";
+      submitBtn.disabled = isLoading;
+      switchBtn.disabled = isLoading;
+      forgotBtn.disabled = isLoading;
+      supportBtn.disabled = isLoading;
+    }
+
+    function sanitizeText(v) {
+      return String(v || "").trim();
+    }
+
+    function currentEmojiByGender() {
+      const gender = sanitizeText(genderInput.value).toLowerCase();
+      return emojiByGender[gender] || defaultEmoji;
+    }
+
+    function refreshAvatarPreview() {
+      avatarEmoji.textContent = currentEmojiByGender();
+    }
+
+    function switchMode(nextMode) {
+      mode = nextMode;
+      const signup = mode === "signup";
+      tabSignup.classList.toggle("active", signup);
+      tabLogin.classList.toggle("active", !signup);
+      signupFields.classList.toggle("hidden", !signup);
+      loginFields.classList.toggle("hidden", signup);
+      loginLinks.style.display = signup ? "none" : "flex";
+      submitBtn.textContent = signup ? "إنشاء الحساب" : "تسجيل الدخول";
+      switchBtn.textContent = signup ? "لديك حساب بالفعل؟ تسجيل دخول" : "ليس لديك حساب؟ إنشاء حساب";
+      formTitle.textContent = signup ? "إنشاء حساب جديد" : "تسجيل الدخول";
+      formSubtitle.textContent = signup
+        ? "املأ  البيانات."
+        : "املا البيانات";
+      setStatus("");
+    }
+
+    function openHelpPage() {
+      window.location.href = "forgot.html";
+    }
+
+    tabSignup.addEventListener("click", () => switchMode("signup"));
+    tabLogin.addEventListener("click", () => switchMode("login"));
+    switchBtn.addEventListener("click", () => switchMode(mode === "signup" ? "login" : "signup"));
+    genderInput.addEventListener("input", refreshAvatarPreview);
+    forgotBtn.addEventListener("click", openHelpPage);
+    supportBtn.addEventListener("click", openHelpPage);
+
+    async function saveUserProfile(user, extra = {}) {
+      const profileRef = doc(db, "users", user.uid);
+      await setDoc(profileRef, {
+        uid: user.uid,
+        name: extra.name || user.displayName || "",
+        email: user.email || extra.email || "",
+        age: extra.age || null,
+        phone: extra.phone || "",
+        city: extra.city || "",
+        gender: extra.gender || null,
+        avatarEmoji: extra.avatarEmoji || "👤",
+        coins: extra.coins ?? 0,
+        score: extra.score ?? 0,
+        bestRun: extra.bestRun ?? 0,
+        theme: extra.theme ?? 0,
+        progress: extra.progress ?? { completed: {}, theme: 0 },
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+    }
+
+    authForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      setStatus("");
+      setLoading(true);
+
+      try {
+        if (mode === "signup") {
+          const name = sanitizeText(nameInput.value);
+          const ageRaw = sanitizeText(ageInput.value);
+          const email = sanitizeText(emailInput.value);
+          const countryCode = countryCodeInput.value;
+          const phoneRaw = sanitizeText(phoneInput.value);
+          const phone = phoneRaw ? `${countryCode} ${phoneRaw}` : "";
+          const city = sanitizeText(cityInput.value);
+          const gender = sanitizeText(genderInput.value).toLowerCase();
+          const password = passwordInput.value;
+
+          if (!name) throw new Error("اكتب الاسم أولًا.");
+          if (!email) throw new Error("اكتب البريد الإلكتروني.");
+          if (!password || password.length < 6) throw new Error("كلمة المرور يجب أن تكون 6 أحرف على الأقل.");
+
+          const age = ageRaw ? Number(ageRaw) : null;
+          if (age !== null && (Number.isNaN(age) || age < 1 || age > 120)) {
+            throw new Error("السن غير صحيح.");
+          }
+
+          const cred = await createUserWithEmailAndPassword(auth, email, password);
+          const user = cred.user;
+          const avatarEmojiValue = currentEmojiByGender();
+
+          await updateProfile(user, {
+            displayName: name
+          });
+
+          const userData = {
+            name,
+            email,
+            age,
+            phone,
+            city,
+            gender: gender || null,
+            avatarEmoji: avatarEmojiValue
+          };
+
+          await saveUserProfile(user, userData);
+
+          try {
+            const session = buildPlaySession(user, userData);
+            sessionStorage.setItem("speednest_launch_session", JSON.stringify(session));
+          } catch {}
+
+          setStatus("تم إنشاء الحساب بنجاح....", "ok");
+          setLoading(true);
+          setTimeout(() => { goToPlay(user, userData); }, 800);
+
+        } else {
+          const email = sanitizeText(loginEmailInput.value);
+          const password = loginPasswordInput.value;
+
+          if (!email) throw new Error("اكتب البريد الإلكتروني.");
+          if (!password) throw new Error("اكتب كلمة المرور.");
+
+          const cred = await signInWithEmailAndPassword(auth, email, password);
+          const user = cred.user;
+          
+          await saveUserProfile(user, {
+            email: user.email,
+            name: user.displayName || ""
+          });
+
+          try {
+            const session = buildPlaySession(user, {
+              email: user.email,
+              name: user.displayName || ""
+            });
+            sessionStorage.setItem("speednest_launch_session", JSON.stringify(session));
+          } catch {}
+
+          setStatus("تم تسجيل الدخول بنجاح. ...", "ok");
+          setLoading(true);
+          setTimeout(() => { goToPlay(user, { email: user.email, name: user.displayName || "" }); }, 650);
+        }
+      } catch (err) {
+        const msg = err?.code ? mapFirebaseError(err.code) : (err?.message || "حدث خطأ غير متوقع.");
+        setStatus(msg, "error");
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    function mapFirebaseError(code) {
+      switch (code) {
+        case "auth/email-already-in-use": return "هذا البريد مستخدم بالفعل.";
+        case "auth/invalid-email": return "البريد الإلكتروني غير صحيح.";
+        case "auth/weak-password": return "كلمة المرور ضعيفة جدًا.";
+        case "auth/user-not-found": return "لا يوجد حساب بهذا البريد.";
+        case "auth/wrong-password": return "كلمة المرور غير صحيحة.";
+        case "auth/invalid-credential": return "بيانات الدخول غير صحيحة.";
+        case "auth/network-request-failed": return "تحقق من الاتصال بالإنترنت.";
+        case "auth/too-many-requests": return "محاولات كثيرة، حاول لاحقًا.";
+        default: return "حدث خطأ في Firebase: " + code;
+      }
+    }
+
+    refreshAvatarPreview();
+    switchMode("signup");
+  </script>
+</body>
+</html>
