@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SpeedNest | استعادة كلمة المرور</title>
+  <meta name="theme-color" content="#050816" />
+  <style>
+    :root{
+      --bg0:#061a0c;
+      --bg1:#0a2812;
+      --bg2:#10361a;
+      --card:rgba(8,14,29,.72);
+      --line:rgba(90,255,240,.14);
+      --text:#eaf7ff;
+      --muted:#a9bfd7;
+      --shadow:0 0 0 1px rgba(94,252,255,.10), 0 18px 50px rgba(0,0,0,.42), 0 0 40px rgba(94,252,255,.06);
+      --radius:24px;
+      --whatsapp:#25D366;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Tahoma,Arial,sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at 10% 10%, rgba(88,255,240,.08), transparent 20%),
+        radial-gradient(circle at 90% 20%, rgba(255,79,216,.06), transparent 18%),
+        linear-gradient(180deg, var(--bg0), var(--bg1) 45%, var(--bg2));
+      overflow-x:hidden;
+    }
+
+    .bg-lines::before{
+      content:"";
+      position:fixed;
+      inset:-20%;
+      pointer-events:none;
+      background:
+        linear-gradient(rgba(94,252,255,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(94,252,255,.04) 1px, transparent 1px);
+      background-size:48px 48px;
+      mask-image: radial-gradient(circle at center, black 22%, transparent 72%);
+      opacity:.34;
+      z-index:0;
+    }
+
+    .wrap{
+      position:relative;
+      z-index:1;
+      min-height:100%;
+      display:grid;
+      place-items:center;
+      padding:18px;
+    }
+
+    .panel{
+      width:min(450px,100%);
+      border:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(10,16,32,.78), rgba(4,8,18,.80));
+      box-shadow:var(--shadow);
+      border-radius:var(--radius);
+      backdrop-filter: blur(16px);
+      padding:30px 20px;
+      text-align:center;
+    }
+
+    .icon-box{
+      width:70px;
+      height:70px;
+      border-radius:20px;
+      display:grid;
+      place-items:center;
+      font-size:36px;
+      background:linear-gradient(135deg, rgba(94,252,255,.16), rgba(255,79,216,.12));
+      border:1px solid rgba(94,252,255,.22);
+      box-shadow:0 0 28px rgba(94,252,255,.10);
+      margin: 0 auto 20px;
+    }
+
+    .head h2{margin:0 0 10px; font-size:26px}
+    .head p{margin:0 0 24px; color:var(--muted); line-height:1.75; font-size: 15px;}
+
+    .actions{display:grid; gap:12px;}
+    
+    .btn{
+      border:0;
+      cursor:pointer;
+      border-radius:16px;
+      padding:16px;
+      font-weight:800;
+      font-size:16px;
+      color:#fff;
+      text-decoration:none;
+      transition:transform .2s ease, filter .2s ease, box-shadow .2s ease;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap: 8px;
+    }
+    
+    .btn-whatsapp {
+      background: var(--whatsapp);
+      box-shadow: 0 0 0 1px rgba(37, 211, 102, 0.4), 0 12px 28px rgba(7, 14, 28, 0.4);
+    }
+    .btn-whatsapp:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 0 1px rgba(37, 211, 102, 0.6), 0 16px 32px rgba(37, 211, 102, 0.2);
+      filter: brightness(1.05);
+    }
+
+    .btn-back{
+      background:rgba(255,255,255,.04);
+      box-shadow:inset 0 0 0 1px rgba(94,252,255,.10);
+      color:#eaf7ff;
+    }
+    .btn-back:hover {
+      background:rgba(255,255,255,.08);
+    }
+
+    @media (max-width: 640px){
+      .wrap{padding:12px}
+      .panel{border-radius:20px; padding:24px 16px}
+    }
+  </style>
+</head>
+<body class="bg-lines">
+  <div class="wrap">
+    <main class="panel">
+      <div class="icon-box">🔐</div>
+      
+      <div class="head">
+        <h2>نسيت كلمة المرور؟</h2>
+        <p>لا تقلق! لاستعادة حسابك وتعيين كلمة مرور جديدة، يرجى التواصل مع فريق الدعم الفني الخاص بنا عبر الواتساب.</p>
+      </div>
+
+      <div class="actions">
+        <!-- رابط الواتساب مضاف له كود مصر 20 ورسالة جاهزة -->
+        <a href="https://wa.me/201124680211?text=مرحباً،%20أريد%20استعادة%20كلمة%20المرور%20الخاصة%20بحسابي%20في%20SpeedNest" class="btn btn-whatsapp" target="_blank" rel="noopener noreferrer">
+          تواصل مع الدعم عبر واتساب 💬
+        </a>
+        
+        <!-- تأكد من تغيير index.html لاسم صفحة الدخول الخاصة بك إذا كان مختلفاً -->
+        <a href="index.html" class="btn btn-back">العودة لتسجيل الدخول</a>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
